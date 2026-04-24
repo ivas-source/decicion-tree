@@ -1,33 +1,7 @@
 // dataset - набор данных
 // feature - свойство по которому делим на два массив
 // threshold - условие свойства: например для свойства: weather мы делим наши данные по значениям 1 и 0
-const dataset = [
-    { age: 22, income: 15000, has_car: 0, credit_score: 580, label: 0 },
-    { age: 45, income: 80000, has_car: 1, credit_score: 750, label: 1 },
-    { age: 33, income: 42000, has_car: 0, credit_score: 670, label: 1 },
-    { age: 19, income: 8000,  has_car: 0, credit_score: 520, label: 0 },
-    { age: 55, income: 95000, has_car: 1, credit_score: 800, label: 1 },
-    { age: 28, income: 31000, has_car: 1, credit_score: 640, label: 0 },
-    { age: 17, income: 5000,  has_car: 0, credit_score: 500, label: 0 },
-    { age: 61, income: 72000, has_car: 1, credit_score: 720, label: 1 },
-    { age: 24, income: 18000, has_car: 0, credit_score: 590, label: 0 },
-    { age: 39, income: 55000, has_car: 1, credit_score: 700, label: 1 },
-    { age: 31, income: 28000, has_car: 0, credit_score: 610, label: 1 },
-    { age: 47, income: 61000, has_car: 0, credit_score: 730, label: 1 },
-    { age: 20, income: 11000, has_car: 0, credit_score: 540, label: 0 },
-    { age: 52, income: 88000, has_car: 1, credit_score: 780, label: 1 },
-    { age: 35, income: 47000, has_car: 1, credit_score: 660, label: 0 },
-    { age: 23, income: 13000, has_car: 0, credit_score: 560, label: 0 },
-    { age: 41, income: 66000, has_car: 0, credit_score: 710, label: 1 },
-    { age: 29, income: 25000, has_car: 0, credit_score: 600, label: 1 },
-    { age: 58, income: 91000, has_car: 1, credit_score: 790, label: 1 },
-    { age: 26, income: 22000, has_car: 1, credit_score: 570, label: 0 },
-    { age: 44, income: 53000, has_car: 0, credit_score: 690, label: 1 },
-    { age: 37, income: 39000, has_car: 1, credit_score: 630, label: 0 },
-    { age: 50, income: 74000, has_car: 1, credit_score: 760, label: 1 },
-    { age: 21, income: 9000,  has_car: 0, credit_score: 510, label: 0 },
-    { age: 34, income: 44000, has_car: 0, credit_score: 650, label: 0 },
-]
+const dataset = [];
 
 
 // Разделям наши данные на две ветви по некоторым условиям threshold (как мы будем получать это условие можно будет дальше увидеть)
@@ -142,7 +116,6 @@ function findMajorClass(dataset, labelFeature) {
         }
         }
     for (const key of Object.keys(count)){
-        console.log(key)
         if (count[key] > bestCount){
             bestClass = key;
             bestCount = count[key]
@@ -179,6 +152,52 @@ function buildTree(dataset, labelFeature, depth = 0){
     }
  }
 
-console.log(buildTree(dataset, 'label'))
+const startingButton = document.getElementById('start-button')
+const drawingButton = document.getElementById('draw-button')
+const n = 100;
+const canvas = document.getElementById('canva');
+const ctx = canvas.getContext('2d');
+
+
+for (let i = 0; i < n; i++){
+    dataset.push({x: Math.random() * 50, y: Math.random() * 50, label: Math.floor(Math.random() * 2) })
+}
+console.log(dataset)
+smartDataset = buildTree(dataset, 'label')
+console.log(smartDataset)
+
+let thresholds = [];
+
+function collectThresholds(node) {
+    let left = null;
+    let right = null;
+    if (typeof node === 'object') {
+        thresholds.push({feature: node.feature, threshold: node.threshold})
+        left = node.left
+        right = node.right
+    }
+    else {
+        return 0
+    }
+    collectThresholds(left)
+    collectThresholds(right)
+
+}
+
+collectThresholds(smartDataset)
+console.log(thresholds)
+
+
+
+drawingButton.onclick = () => {
+    ctx.beginPath();
+    ctx.moveTo(150, 0);
+    ctx.lineTo(150, 300);
+    ctx.moveTo(0, 150);
+    ctx.lineTo(300, 150);
+    ctx.stroke();
+
+}
+
 
 
