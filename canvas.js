@@ -9,9 +9,6 @@ const w = canvas.width;
 const h = canvas.height;
 const dataset = []
 
-
-
-
 for (let i = 0; i < n; i++){
     dataset.push({x: Math.floor(Math.random() * 50), y: Math.floor(Math.random() * 50), label: Math.floor(Math.random() * 2) })
 }
@@ -20,6 +17,7 @@ let smartDataset = buildTree(dataset, 'label')
 console.log(smartDataset)
 
 let thresholds = [];
+
 
 function collectThresholds(node) {
     let left = null;
@@ -36,33 +34,35 @@ function collectThresholds(node) {
     collectThresholds(right)
 
 }
-let point = {x: 5, y: 5}
-collectThresholds(smartDataset)
-console.log(predict(smartDataset, point))
+collectThresholds(smartDataset);
 
-
-
-drawingButton.onclick = () => {
+function drawCoordinateAxes() {
     ctx.beginPath();
-    ctx.moveTo(150, 0);
-    ctx.lineTo(150, 300);
-    ctx.moveTo(0, 150);
-    ctx.lineTo(300, 150);
-    ctx.moveTo(150, 150);
+    ctx.moveTo(0, 300);
+    ctx.lineTo(300,300);
+    ctx.moveTo(0, 300);
+    ctx.lineTo(0, 0);
+    ctx.stroke();
+}
+
+function drawThresholds(){
     for (const point of thresholds){
         let canvasX = point.threshold * 6
         if (point.feature == 'x'){
-            ctx.moveTo(150 + canvasX, 0);
-            ctx.lineTo(150 + canvasX, 300);
+            ctx.moveTo(canvasX, 0);
+            ctx.lineTo(canvasX, 300);
             ctx.stroke();
         }
         else if (point.feature == 'y'){
             let canvasY = point.threshold * 6
-            ctx.moveTo(0, 150 + canvasY)
-            ctx.lineTo(300, 150 + canvasY);
+            ctx.moveTo(0, canvasY)
+            ctx.lineTo(300, canvasY);
             ctx.stroke();
         }
     }
+}
+
+function colourResults() {
     for (let i = 0; i < w; i++ ){
         for (let j = 0; j < h; j++){
             let point = {x: (i / 6), y: (j / 6)}
@@ -77,8 +77,11 @@ drawingButton.onclick = () => {
                 ctx.fillRect(i, j, 1, 1);
             }
         }
+    }
 }
-    ctx.stroke();
 
+
+drawingButton.onclick = () => {
+    drawCoordinateAxes();
+    drawThresholds();
 }
-console.log(dataset)
