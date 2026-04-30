@@ -10,10 +10,10 @@ function split(dataset, feature, threshold) {
     let right = [];
     for (const point of dataset) {
         if (point[feature] > threshold){
-            left.push(point)
+            right.push(point)
         }
         else if (point[feature] < threshold){
-            right.push(point)
+            left.push(point)
         }
     }
     return {left, right}
@@ -159,11 +159,11 @@ export function predict(node, point){
         return node  
     }
     if (point[node.feature] > node.threshold) {
-        left = node.left;
-        return predict(node.left, point);
-    } else {
         right = node.right;
-        return predict(node.right, point)
+        return predict(node.right, point);
+    } else {
+        left = node.left;
+        return predict(node.left, point)
     }
 }
 
