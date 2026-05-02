@@ -192,7 +192,33 @@
             <p>Placeholder — здесь будет объяснение процесса построения дерева: выбор признака, порога, рекурсивное разбиение.</p>
             <!-- TODO: вставить код -->
             <pre><code>
-                
+function buildTree(dataset, labelFeature, depth = 0){
+    let values = [];
+    for (const i of dataset){
+        let value = i[labelFeature]
+        values.push(value)
+    }
+    let unique = [...new Set(values)]
+    if (unique.length === 1){
+        return unique[0]
+    }
+    if (depth >= 5){
+        return findMajorClass(dataset, labelFeature)
+    }
+    if (dataset.length <= 3){
+        return findMajorClass(dataset, labelFeature)
+    }
+    let a = findBestSplit(dataset, labelFeature)
+    let b = split(dataset, a.bestFeature, a.bestThreshold)
+    let left = buildTree(b.left, labelFeature, depth + 1)
+    let right = buildTree(b.right, labelFeature, depth + 1)
+    return {
+        feature: a.bestFeature,
+        threshold: a.bestThreshold,
+        left: left,
+        right: right
+    }
+ }
             </code></pre>
         </section>
 
@@ -202,7 +228,79 @@
             <!-- TODO: вставить текст -->
             <p>Placeholder — здесь будет объяснение коэффициента Джини и выбора лучшего разбиения.</p>
             <!-- TODO: вставить код -->
-            <pre><code>// Placeholder: gini() и findBestSplit()</code></pre>
+            <pre><code>// Функции, для подсчета коэффицента Джини и разбиения.
+function gini(points, feature) {
+    // Получаем некоторый массив со всеми значениями некоторых свойств
+    let values = []
+    const count = {}
+    for (const point of points){
+        let a = point[feature]
+        values.push(a)
+    }
+    let unique = new Set(values) // С помощью класса сет получаем объект хранящий уникальные значения массива values
+    // Этим циклом считаем количество в массиве values этих уникальных значений, например если массив будет [1, 0, 0, 0, 1] то мы получим count = {1 : 2, 0: 3}
+    for (const i of unique){
+        count[i] = 0
+        for (const j of values){
+            if (i == j){
+                count[i] += 1
+            }
+        }
+        }
+    // Находим сумму, которая используется в коэффиценте Джини: 1 - sum(веротностей)
+    let sum = 0
+    for (const k of unique){
+        let p = count[k] / values.length
+        sum += p**2
+    }
+    return 1 - sum
+}
+
+function findBestSplit(dataset, labelFeature){
+    // Вводим это чтобы потом обновлять их значения
+    let bestGini = 1;
+    let bestFeature = null;
+    let bestThreshold = null;
+
+
+    let features = Object.keys(dataset[0]).slice(0, -1) // dataset[0] - это первый элемент массива, в нашем массиве это будет weather: 1, temp: 22, label: 1; я благодаря Object.keys мы получаем массив уникальных свойств
+    // features - это массив всех свойств нашего датасета, помимо последнего, тк подразумевается, что наши датасеты всегда имеют 'label', как последний столбец (тут наверно надо придумать что-то другое)
+    for (const feature of features){
+        let values = []; 
+        for (const i of dataset){
+            let a = i[feature];
+            values.push(a);
+        }
+        const unique = [... new Set(values)].sort((a, b) => a - b);
+        /*
+        Вообщем, опять получаем все уникальные значения values; сортируем массив, нужно это для чего: так как нам нужно лучшее разделение, мы должны впринципе проверить все возможные разделения
+        посчитать для них коэффицент Джини и выбрать с наименьшим коэффицентом, если у нас данные типа [9, 12, 15, 17], то в какой-то книжке я вычитал, что обычно проверяют по средним арифметическим
+        идущим друг за другом элементам, то есть a = (9 + 12) / 2, делят на две части, где значения меньше a и больше a; считаем для каждого коэффицент Джини, после этого считаем взвешеннный коэффицент
+        Джини т.к. количество значений может отличаться, поэтому я сортирую массив по возрастанию, чтобы удобнее считать средние арифметические.
+        */ 
+        let temps = [];
+        for (let i = 0; i < unique.length - 1; i++ ){
+            let temp = (unique[i] + unique[i+1]) / 2;
+            temps.push(temp);
+        }
+        // Посчитали все возможные средние арифметические, теперь итерируемся по ним, делим и считаем коэффицент Джини, перезаписывая bestGini, bestFeature, bestThreshold
+        for (const threshold of temps){
+            const result = split(dataset, feature, threshold)
+            let gLeft = gini(result.left, labelFeature)
+            let gRight = gini(result.right, labelFeature)
+            let g = (result.left.length / (result.left.length + result.right.length)) *gLeft + (result.right.length / (result.left.length + result.right.length)) * gRight
+            if (g < bestGini){
+                bestGini = g;
+                bestFeature = feature;
+                bestThreshold = threshold;
+            }
+        }
+        
+    }
+    return {bestFeature, bestThreshold}
+}
+
+            </code></pre>
         </section>
 
         <section>
@@ -211,7 +309,19 @@
             <!-- TODO: вставить текст -->
             <p>Placeholder — здесь будет описание обхода дерева от корня до листа.</p>
             <!-- TODO: вставить код -->
-            <pre><code>// Placeholder: predict()</code></pre>
+            <pre><code>// Функция предсказания
+function predict(node, point){
+    if (typeof node !== 'object' || node === null) {
+        return node
+    }
+    if (point[node.feature] > node.threshold) {
+        return predict(node.right, point);
+    } else {
+        return predict(node.left, point)
+    }
+}
+
+            </code></pre>
         </section>
 
         <section>
