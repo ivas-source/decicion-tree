@@ -5,7 +5,7 @@ const dataset = [];
 
 
 // Разделям наши данные на две ветви по некоторым условиям threshold (как мы будем получать это условие можно будет дальше увидеть)
-function split(dataset, feature, threshold) {
+export function split(dataset, feature, threshold) {
     let left = [];
     let right = [];
     for (const point of dataset) {
@@ -22,7 +22,7 @@ function split(dataset, feature, threshold) {
 
 // Считаем коэффицент Джини
 
-function gini(points, feature) {
+export function gini(points, feature) {
     // Получаем некоторый массив со всеми значениями некоторых свойств
     let values = []
     const count = {}

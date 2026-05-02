@@ -168,6 +168,18 @@
             border: 1px solid #d1d5db;
             flex-shrink: 0;
         }
+
+        .tree-canvas-wrap {
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .tree-canvas-wrap canvas {
+            display: block;
+            border: none;
+            border-radius: 0;
+        }
     </style>
 </head>
 <body>
@@ -322,6 +334,15 @@ function predict(node, point){
 }
 
             </code></pre>
+        </section>
+
+        <section>
+            <span class="section-label">Структура дерева</span>
+            <h2>Визуализация построенного дерева</h2>
+            <p>Дерево обновляется автоматически при генерации нового датасета. Синий цвет — предсказание класса 0, жёлтый — класса 1.</p>
+            <div class="tree-canvas-wrap">
+                <canvas id="tree-canvas"></canvas>
+            </div>
         </section>
 
         <section>
