@@ -1,111 +1,127 @@
 import { buildTree, predict } from './tree.js'
 
-const startingButton = document.getElementById('start-button')
-const drawingButton = document.getElementById('draw-button')
-const n = 20;
+const SCALE = 8;
+const DATA_MAX = 50;
+
+const startingButton = document.getElementById('start-button');
+const drawingButton = document.getElementById('draw-button');
 const canvas = document.getElementById('canva');
 const ctx = canvas.getContext('2d');
 const w = canvas.width;
 const h = canvas.height;
-const dataset = []
 
-for (let i = 0; i < n; i++){
-    dataset.push({x: Math.random() * 50, y: Math.random() * 50, label: Math.floor(Math.random() * 2) })
-}
-console.log(dataset)
-let smartDataset = buildTree(dataset, 'label')
-console.log(smartDataset)
-
+let dataset = [];
+let tree = null;
 let thresholds = [];
 
-
-function collectThresholds(node, xMin = 0, xMax = 50, yMin = 0, yMax = 50) {
-    let left = null;
-    let right = null;
-    if (typeof node === 'object') {
-        thresholds.push({feature: node.feature, threshold: node.threshold, xMin, xMax, yMin, yMax })
-        left = node.left
-        right = node.right
-
-        if (node.feature == 'x'){
-            collectThresholds(left, xMin, node.threshold, yMin, yMax)   
-            collectThresholds(right, node.threshold, xMax, yMin, yMax)
-        }
-        else if (node.feature == 'y'){
-            collectThresholds(left, xMin, xMax, yMin, node.threshold)   
-            collectThresholds(right, xMin, xMax, node.threshold, yMax)
-        }
+function generateDataset() {
+    dataset = [];
+    for (let i = 0; i < 20; i++) {
+        dataset.push({ x: Math.random() * DATA_MAX, y: Math.random() * DATA_MAX, label: Math.floor(Math.random() * 2) });
     }
-    else {
-        return 0
+    tree = buildTree(dataset, 'label');
+    thresholds = [];
+    collectThresholds(tree);
+    ctx.clearRect(0, 0, w, h);
+}
+
+function collectThresholds(node, xMin = 0, xMax = DATA_MAX, yMin = 0, yMax = DATA_MAX) {
+    if (typeof node !== 'object' || node === null) return;
+    thresholds.push({ feature: node.feature, threshold: node.threshold, xMin, xMax, yMin, yMax });
+    if (node.feature === 'x') {
+        collectThresholds(node.left, xMin, node.threshold, yMin, yMax);
+        collectThresholds(node.right, node.threshold, xMax, yMin, yMax);
+    } else if (node.feature === 'y') {
+        collectThresholds(node.left, xMin, xMax, yMin, node.threshold);
+        collectThresholds(node.right, xMin, xMax, node.threshold, yMax);
     }
 }
-collectThresholds(smartDataset);
-console.log(thresholds);
-
 
 function drawCoordinateAxes() {
+    const arrow = 8;
+    const spread = Math.PI / 7;
+
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = 'italic 13px system-ui, sans-serif';
+
     ctx.beginPath();
-    ctx.moveTo(0, 300);
-    ctx.lineTo(300,300);
-    ctx.moveTo(0, 300);
+    ctx.moveTo(0, h);
+    ctx.lineTo(w, h);
+    ctx.stroke();
+
+
+    ctx.beginPath();
+    ctx.moveTo(w, h);
+    ctx.lineTo(w - arrow * Math.cos(spread), h - arrow * Math.sin(spread));
+    ctx.moveTo(w, h);
+    ctx.lineTo(w - arrow * Math.cos(spread), h + arrow * Math.sin(spread));
+    ctx.stroke();
+
+    ctx.fillText('x', w - 16, h - 8);
+
+    
+    ctx.beginPath();
+    ctx.moveTo(0, h);
     ctx.lineTo(0, 0);
     ctx.stroke();
+
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo( arrow * Math.sin(spread), arrow * Math.cos(spread));
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-arrow * Math.sin(spread), arrow * Math.cos(spread));
+    ctx.stroke();
+
+    ctx.fillText('y', 6, 14);
 }
 
-function drawThresholds(){
-    for (const point of thresholds){
-        let canvasX = point.threshold * 6
-        if (point.feature == 'x'){
-            ctx.moveTo(canvasX, (50 - point.yMin) * 6);
-            ctx.lineTo(canvasX, (50 - point.yMax) * 6);
-            ctx.stroke();
+function drawThresholds() {
+    ctx.strokeStyle = '#374151';
+    for (const point of thresholds) {
+        ctx.beginPath();
+        if (point.feature === 'x') {
+            const canvasX = point.threshold * SCALE;
+            ctx.moveTo(canvasX, (DATA_MAX - point.yMin) * SCALE);
+            ctx.lineTo(canvasX, (DATA_MAX - point.yMax) * SCALE);
+        } else if (point.feature === 'y') {
+            const canvasY = (DATA_MAX - point.threshold) * SCALE;
+            ctx.moveTo(point.xMin * SCALE, canvasY);
+            ctx.lineTo(point.xMax * SCALE, canvasY);
         }
-        else if (point.feature == 'y'){
-            let canvasY = (50 - point.threshold) * 6
-            ctx.moveTo(point.xMin * 6, canvasY)
-            ctx.lineTo(point.xMax * 6, canvasY);
-            ctx.stroke();
-        }
+        ctx.stroke();
     }
 }
-console.log(thresholds)
 
-function drawPoints(){
-    for (const point of dataset){
-        let canvasX = point.x * 6;
-        let canvasY = (50 - point.y) * 6;
+function drawPoints() {
+    for (const point of dataset) {
         ctx.beginPath();
-        ctx.arc(canvasX, canvasY, 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'black';
+        ctx.arc(point.x * SCALE, (DATA_MAX - point.y) * SCALE, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#1a1a1a';
         ctx.fill();
     }
 }
 
-
-
-
 function colourResults() {
-    for (let i = 0; i < w; i++ ){
-        for (let j = 0; j < h; j++){
-            let point = {x: (i / 6), y: (50 - j / 6)}
-            if (predict(smartDataset, point) == 0){
-                ctx.beginPath();
-                ctx.fillStyle ='blue';
-                ctx.fillRect(i, j, 1, 1);
-            }
-            else{
-                ctx.beginPath();
-                ctx.fillStyle = 'yellow'
-                ctx.fillRect(i, j, 1, 1);
-            }
+    for (let i = 0; i < w; i++) {
+        for (let j = 0; j < h; j++) {
+            const point = { x: i / SCALE, y: DATA_MAX - j / SCALE };
+            ctx.fillStyle = predict(tree, point) == 0 ? '#bfdbfe' : '#fde68a';
+            ctx.fillRect(i, j, 1, 1);
         }
     }
 }
+
+startingButton.onclick = () => {
+    generateDataset();
+};
 
 drawingButton.onclick = () => {
     colourResults();
     drawCoordinateAxes();
     drawThresholds();
     drawPoints();
-}
+};
+
+generateDataset();

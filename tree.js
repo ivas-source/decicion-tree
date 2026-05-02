@@ -12,7 +12,7 @@ function split(dataset, feature, threshold) {
         if (point[feature] > threshold){
             right.push(point)
         }
-        else if (point[feature] < threshold){
+        else {
             left.push(point)
         }
     }
@@ -153,16 +153,12 @@ export function buildTree(dataset, labelFeature, depth = 0){
  }
 
 export function predict(node, point){
-    let left = null;
-    let right = null;
-    if (typeof node !== 'object') {
-        return node  
+    if (typeof node !== 'object' || node === null) {
+        return node
     }
     if (point[node.feature] > node.threshold) {
-        right = node.right;
         return predict(node.right, point);
     } else {
-        left = node.left;
         return predict(node.left, point)
     }
 }
