@@ -105,6 +105,10 @@
             line-height: 1.7;
             margin: 28px 0;
             tab-size: 2;
+            font-variant-ligatures: none;
+            font-feature-settings: 'liga' 0, 'calt' 0;
+            /* Ширина от вьюпорта: растёт с окном, но не шире 1100px */
+            width: 100%;
         }
 
         pre code {
@@ -412,7 +416,6 @@ function predict(node, point){
             <p>Нажмите «Нарисовать», чтобы увидеть, как дерево разбивает пространство признаков на области. «Новый датасет» генерирует другую случайную выборку.</p>
             <div class="viz-controls">
                 <button class="btn-primary" id="draw-button">Нарисовать</button>
-                <button class="btn-secondary" id="start-button">Новый датасет</button>
             </div>
             <canvas id="canva" width="400" height="400"></canvas>
             <div class="legend">

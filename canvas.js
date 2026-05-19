@@ -3,7 +3,6 @@ import { buildTree, predict, gini, split } from './tree.js'
 const SCALE = 8;
 const DATA_MAX = 50;
 
-const startingButton = document.getElementById('start-button');
 const drawingButton = document.getElementById('draw-button');
 const canvas = document.getElementById('canva');
 const ctx = canvas.getContext('2d');
@@ -114,11 +113,8 @@ function colourResults() {
     }
 }
 
-startingButton.onclick = () => {
-    generateDataset();
-};
-
 drawingButton.onclick = () => {
+    generateDataset();
     colourResults();
     drawCoordinateAxes();
     drawThresholds();
